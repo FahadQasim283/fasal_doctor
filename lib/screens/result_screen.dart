@@ -434,7 +434,7 @@ class ResultScreen extends StatelessWidget {
               Icon(Icons.shield, color: Colors.green.shade600, size: 24),
               const SizedBox(width: 12),
               Text(
-                'Prevention Tips | بچاؤ کی تجاویز',
+                'Prevention Tips\nبچاؤ کی تجاویز',
                 style: GoogleFonts.poppins(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -534,7 +534,7 @@ class ResultScreen extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              'فصل ڈاکٹر AI سے بات کریں',
+              'سے بات کریں AI ڈاکٹر',
               style: GoogleFonts.notoNastaliqUrdu(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
