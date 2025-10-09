@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import '../config/api_config.dart';
+import 'chat_storage_service.dart';
 
 class ChatMessage {
   final String role; // 'user' or 'assistant'
@@ -14,7 +15,9 @@ class ChatMessage {
 class ChatbotService {
   static final ChatbotService _instance = ChatbotService._internal();
   factory ChatbotService() => _instance;
-  ChatbotService._internal();
+  ChatbotService._internal() {
+    _initializeService();
+  }
 
   final Dio _dio = Dio(
     BaseOptions(
@@ -29,11 +32,39 @@ class ChatbotService {
   );
 
   final List<ChatMessage> _conversationHistory = [];
+  bool _isInitialized = false;
+
+  /// Initialize the service by loading stored chat history
+  Future<void> _initializeService() async {
+    if (_isInitialized) return;
+
+    try {
+      // Load stored chat history
+      final storedMessages = await ChatStorageService().loadChatHistory();
+      _conversationHistory.addAll(storedMessages);
+
+      // Load disease context if available
+      final diseaseContext = await ChatStorageService().loadDiseaseContext();
+      if (diseaseContext != null) {
+        initializeWithDiseaseContext(
+          diseaseContext['diseaseName']!,
+          diseaseContext['diseaseDescription']!,
+        );
+      }
+
+      _isInitialized = true;
+    } catch (e) {
+      debugPrint('Error initializing chat service: $e');
+      _isInitialized = true; // Mark as initialized even on error
+    }
+  }
 
   List<ChatMessage> get conversationHistory => List.unmodifiable(_conversationHistory);
 
   void clearHistory() {
     _conversationHistory.clear();
+    // Clear stored data
+    ChatStorageService().clearAllData();
   }
 
   void initializeWithDiseaseContext(String diseaseName, String description) {
@@ -51,6 +82,11 @@ Respond in both Urdu and English.
 ''';
 
     _conversationHistory.add(ChatMessage(role: 'system', content: contextMessage));
+
+    // Save disease context to storage
+    ChatStorageService().saveDiseaseContext(diseaseName, description);
+    // Save updated chat history
+    ChatStorageService().saveChatHistory(_conversationHistory);
   }
 
   Future<String> sendMessage(String userMessage) async {
@@ -85,6 +121,10 @@ Respond in both Urdu and English.
         // Add assistant response to history
         _conversationHistory.add(ChatMessage(role: 'assistant', content: assistantMessage));
         debugPrint('💬 Assistant: $assistantMessage');
+
+        // Save updated chat history
+        ChatStorageService().saveChatHistory(_conversationHistory);
+
         return assistantMessage;
       } else {
         debugPrint('❌ Chatbot error: ${response.statusCode}');
@@ -96,6 +136,8 @@ Respond in both Urdu and English.
       debugPrint('❌ Chatbot error message: ${e.message}');
       if (_conversationHistory.isNotEmpty && _conversationHistory.last.role == 'user') {
         _conversationHistory.removeLast();
+        // Save updated history after removing failed message
+        ChatStorageService().saveChatHistory(_conversationHistory);
       }
 
       if (e.type == DioExceptionType.connectionTimeout ||
@@ -113,6 +155,8 @@ Respond in both Urdu and English.
       debugPrint('❌ Chatbot error here: $e');
       if (_conversationHistory.isNotEmpty && _conversationHistory.last.role == 'user') {
         _conversationHistory.removeLast();
+        // Save updated history after removing failed message
+        ChatStorageService().saveChatHistory(_conversationHistory);
       }
       throw Exception('error');
     }
