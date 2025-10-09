@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:animate_do/animate_do.dart';
 import '../services/chatbot_service.dart';
+import '../widgets/notifications_widgets.dart';
 
 class ChatbotScreen extends StatefulWidget {
   final String? diseaseName;
@@ -59,12 +60,31 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       _scrollToBottom();
     } catch (e) {
       // Show user-friendly error message
+      debugPrint('❌ Chatbot error: $e');
+      String errorMessage = 'Unable to connect. Please check your internet and try again.';
+
+      if (e.toString().contains('timeout')) {
+        errorMessage = 'Connection timeout. Please try again.';
+      } else if (e.toString().contains('401')) {
+        errorMessage = 'Service unavailable. Please try again later.';
+      } else if (e.toString().contains('rate_limit')) {
+        errorMessage = 'Too many requests. Please wait a moment and try again.';
+      } else if (e.toString().contains('network')) {
+        errorMessage = 'Network error. Please check your connection and try again.';
+      } else if (e.toString().contains('error')) {
+        errorMessage = 'An error occurred. Please try again.';
+      }
+
+      _showError(errorMessage);
     } finally {
       setState(() => _isLoading = false);
     }
   }
 
-  @override
+  void _showError(String message) {
+    NotificationWidgets.showError(message);
+  }
+
   void dispose() {
     _messageController.dispose();
     _scrollController.dispose();

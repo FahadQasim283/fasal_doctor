@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:animate_do/animate_do.dart';
 import '../services/model_service.dart';
+import '../widgets/notifications_widgets.dart';
 import 'result_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -66,9 +67,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _showError(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message), backgroundColor: Colors.red));
+    NotificationWidgets.showError(message);
   }
 
   @override
