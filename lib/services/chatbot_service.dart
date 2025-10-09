@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import '../config/api_config.dart';
 
 class ChatMessage {
@@ -78,13 +79,16 @@ Respond in both Urdu and English.
 
         // Add assistant response to history
         _conversationHistory.add(ChatMessage(role: 'assistant', content: assistantMessage));
-
+        debugPrint('💬 Assistant: $assistantMessage');
         return assistantMessage;
       } else {
+        debugPrint('❌ Chatbot error: ${response.statusCode}');
         throw Exception('Service unavailable');
       }
     } on DioException catch (e) {
       // Remove the user message from history if request failed
+      debugPrint('❌ Chatbot error: $e');
+      debugPrint('❌ Chatbot error message: ${e.message}');
       if (_conversationHistory.isNotEmpty && _conversationHistory.last.role == 'user') {
         _conversationHistory.removeLast();
       }
@@ -94,11 +98,14 @@ Respond in both Urdu and English.
         throw Exception('timeout');
       } else if (e.response?.statusCode == 401) {
         throw Exception('401');
+      } else if (e.response?.statusCode == 429) {
+        throw Exception('rate_limit');
       } else {
         throw Exception('network');
       }
     } catch (e) {
       // Remove the user message from history if request failed
+      debugPrint('❌ Chatbot error here: $e');
       if (_conversationHistory.isNotEmpty && _conversationHistory.last.role == 'user') {
         _conversationHistory.removeLast();
       }

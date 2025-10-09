@@ -59,29 +59,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       _scrollToBottom();
     } catch (e) {
       // Show user-friendly error message
-      debugPrint('❌ Chatbot error: $e');
-      String errorMessage = 'Unable to connect. Please check your internet and try again.';
-
-      if (e.toString().contains('timeout')) {
-        errorMessage = 'Connection timeout. Please try again.';
-      } else if (e.toString().contains('401')) {
-        errorMessage = 'Service unavailable. Please try again later.';
-      }
-
-      _showError(errorMessage);
     } finally {
       setState(() => _isLoading = false);
     }
-  }
-
-  void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-        duration: const Duration(seconds: 3),
-      ),
-    );
   }
 
   @override
