@@ -59,6 +59,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       _scrollToBottom();
     } catch (e) {
       // Show user-friendly error message
+      debugPrint('❌ Chatbot error: $e');
       String errorMessage = 'Unable to connect. Please check your internet and try again.';
 
       if (e.toString().contains('timeout')) {
