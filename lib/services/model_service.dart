@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'package:image/image.dart' as img;
 import 'package:path_provider/path_provider.dart';
 import 'package:pytorch_lite/pytorch_lite.dart';
@@ -8,7 +7,6 @@ import 'package:pytorch_lite/pytorch_lite.dart';
 class ModelService {
   static ModelService? _instance;
   bool _isInitialized = false;
-  String? _modelPath;
   ModelObjectDetection? _model;
 
   // Image input size for the model
@@ -83,36 +81,22 @@ class ModelService {
     if (_isInitialized) return;
 
     try {
-      // Load model from assets and copy to local storage
-      _modelPath = await _getModelPath();
-
-      // Initialize PyTorch model
+      // Initialize PyTorch model directly from assets
       _model = await _loadModel();
 
       _isInitialized = true;
-      debugPrint('✅ PyTorch model loaded successfully from: $_modelPath');
+      debugPrint('✅ PyTorch model loaded successfully');
     } catch (e) {
       debugPrint('❌ Error loading model: $e');
       throw Exception('Failed to load model: $e');
     }
   }
 
-  Future<String> _getModelPath() async {
-    final directory = await getApplicationDocumentsDirectory();
-    final modelFile = File('${directory.path}/crop_model.pt');
-
-    if (!await modelFile.exists()) {
-      final byteData = await rootBundle.load('assets/best_advanced_crop_model_mobile (3).pt');
-      await modelFile.writeAsBytes(byteData.buffer.asUint8List());
-    }
-
-    return modelFile.path;
-  }
-
   Future<ModelObjectDetection> _loadModel() async {
     try {
+      // Load model directly from assets (pytorch_lite handles this internally)
       return await PytorchLite.loadObjectDetectionModel(
-        _modelPath!,
+        'assets/model.pt', // Direct asset path
         classNames.length,
         imageSize,
         imageSize,
@@ -201,7 +185,7 @@ class ModelService {
   }
 
   void dispose() {
-    _modelPath = null;
+    _model = null;
     _isInitialized = false;
   }
 }
