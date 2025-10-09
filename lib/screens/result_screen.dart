@@ -93,11 +93,6 @@ class ResultScreen extends StatelessWidget {
                         const SizedBox(height: 24),
                         FadeInUp(
                           delay: const Duration(milliseconds: 500),
-                          child: _buildConfidenceSection(),
-                        ),
-                        const SizedBox(height: 24),
-                        FadeInUp(
-                          delay: const Duration(milliseconds: 600),
                           child: _buildChatbotButton(context, diseaseInfo),
                         ),
                         const SizedBox(height: 40),
@@ -128,9 +123,9 @@ class ResultScreen extends StatelessWidget {
           ),
           const SizedBox(width: 16),
           Text(
-            'Diagnosis Result',
+            'Disease Result - نتیجہ',
             style: GoogleFonts.poppins(
-              fontSize: 24,
+              fontSize: 22,
               fontWeight: FontWeight.bold,
               color: Colors.green.shade900,
             ),
@@ -213,22 +208,6 @@ class ResultScreen extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
           ],
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              'Confidence: ${(confidence * 100).toStringAsFixed(1)}%',
-              style: GoogleFonts.poppins(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: Colors.white,
-              ),
-            ),
-          ),
         ],
       ),
     );
@@ -348,65 +327,6 @@ class ResultScreen extends StatelessWidget {
               style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey.shade700, height: 1.5),
             ),
           ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildConfidenceSection() {
-    final confidence = result['confidence'] as double;
-
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(color: Colors.green.shade200, blurRadius: 10, offset: const Offset(0, 4)),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.analytics, color: Colors.purple.shade600, size: 24),
-              const SizedBox(width: 12),
-              Text(
-                'Analysis Confidence',
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey.shade800,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: LinearProgressIndicator(
-              value: confidence,
-              minHeight: 12,
-              backgroundColor: Colors.grey.shade200,
-              valueColor: AlwaysStoppedAnimation<Color>(
-                confidence > 0.8
-                    ? Colors.green
-                    : confidence > 0.6
-                    ? Colors.orange
-                    : Colors.red,
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            confidence > 0.8
-                ? 'High confidence - Very reliable result'
-                : confidence > 0.6
-                ? 'Medium confidence - Fairly reliable result'
-                : 'Low confidence - Consider retaking the photo',
-            style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey.shade600),
-          ),
         ],
       ),
     );

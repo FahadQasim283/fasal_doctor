@@ -81,56 +81,28 @@ Respond in both Urdu and English.
 
         return assistantMessage;
       } else {
-        throw Exception('Failed to get response: ${response.statusCode}');
+        throw Exception('Service unavailable');
       }
     } on DioException catch (e) {
+      // Remove the user message from history if request failed
+      if (_conversationHistory.isNotEmpty && _conversationHistory.last.role == 'user') {
+        _conversationHistory.removeLast();
+      }
+
       if (e.type == DioExceptionType.connectionTimeout ||
           e.type == DioExceptionType.receiveTimeout) {
-        throw Exception('Connection timeout. Please check your internet connection.');
-      } else if (e.response != null) {
-        throw Exception('API Error: ${e.response?.statusMessage ?? 'Unknown error'}');
+        throw Exception('timeout');
+      } else if (e.response?.statusCode == 401) {
+        throw Exception('401');
       } else {
-        throw Exception('Network error: ${e.message}');
+        throw Exception('network');
       }
     } catch (e) {
-      throw Exception('Unexpected error: $e');
-    }
-  }
-
-  // Get a quick disease-specific response
-  Future<String> getQuickDiseaseInfo(String diseaseName) async {
-    final prompt =
-        '''
-Provide a brief summary about $diseaseName in both Urdu and English.
-Include:
-1. What it is (1-2 sentences)
-2. Main symptoms (2-3 points)
-3. Primary treatment (2-3 points)
-
-Keep it concise and practical for farmers.
-''';
-
-    try {
-      final response = await _dio.post(
-        '',
-        data: {
-          'model': 'grok-beta',
-          'messages': [
-            {'role': 'system', 'content': ApiConfig.systemPrompt},
-            {'role': 'user', 'content': prompt},
-          ],
-          'temperature': 0.5,
-          'max_tokens': 500,
-        },
-      );
-
-      if (response.statusCode == 200) {
-        return response.data['choices'][0]['message']['content'] as String;
-      } else {
-        throw Exception('Failed to get disease info');
+      // Remove the user message from history if request failed
+      if (_conversationHistory.isNotEmpty && _conversationHistory.last.role == 'user') {
+        _conversationHistory.removeLast();
       }
-    } catch (e) {
-      throw Exception('Failed to fetch disease information: $e');
+      throw Exception('error');
     }
   }
 }

@@ -27,23 +27,11 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   }
 
   Future<void> _initializeChat() async {
+    // Initialize chat context without making an API call
     if (widget.diseaseName != null && widget.diseaseDescription != null) {
       _chatbotService.initializeWithDiseaseContext(widget.diseaseName!, widget.diseaseDescription!);
-
-      // Get initial greeting
-      setState(() => _isLoading = true);
-      try {
-        await _chatbotService.sendMessage('Hello, I need help with my crop.');
-        setState(() => _isInitialized = true);
-        _scrollToBottom();
-      } catch (e) {
-        _showError('Failed to initialize chat: $e');
-      } finally {
-        setState(() => _isLoading = false);
-      }
-    } else {
-      setState(() => _isInitialized = true);
     }
+    setState(() => _isInitialized = true);
   }
 
   void _scrollToBottom() {
@@ -60,16 +48,26 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
 
   Future<void> _sendMessage() async {
     final message = _messageController.text.trim();
-    if (message.isEmpty) return;
+    if (message.isEmpty || _isLoading) return;
 
     _messageController.clear();
     setState(() => _isLoading = true);
 
     try {
       await _chatbotService.sendMessage(message);
+      setState(() {}); // Refresh UI
       _scrollToBottom();
     } catch (e) {
-      _showError(e.toString());
+      // Show user-friendly error message
+      String errorMessage = 'Unable to connect. Please check your internet and try again.';
+
+      if (e.toString().contains('timeout')) {
+        errorMessage = 'Connection timeout. Please try again.';
+      } else if (e.toString().contains('401')) {
+        errorMessage = 'Service unavailable. Please try again later.';
+      }
+
+      _showError(errorMessage);
     } finally {
       setState(() => _isLoading = false);
     }
