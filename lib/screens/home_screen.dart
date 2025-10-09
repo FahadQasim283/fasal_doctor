@@ -37,20 +37,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _pickImage(ImageSource source) async {
-    // Request permissions
-    if (source == ImageSource.camera) {
-      final status = await Permission.camera.request();
-      if (!status.isGranted) {
-        _showError('Camera permission is required');
-        return;
-      }
-    } else {
-      final status = await Permission.photos.request();
-      if (!status.isGranted) {
-        _showError('Gallery permission is required');
-        return;
-      }
-    }
 
     try {
       final XFile? image = await _picker.pickImage(source: source, imageQuality: 85);
