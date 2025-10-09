@@ -18,10 +18,10 @@ class ChatbotService {
 
   final Dio _dio = Dio(
     BaseOptions(
-      baseUrl: ApiConfig.grokApiUrl,
+      baseUrl: ApiConfig.groqApiUrl,
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ${ApiConfig.grokApiKey}',
+        'Authorization': 'Bearer ${ApiConfig.groqApiKey}',
       },
       connectTimeout: const Duration(seconds: 30),
       receiveTimeout: const Duration(seconds: 30),
@@ -71,7 +71,12 @@ Respond in both Urdu and English.
       // Make API call
       final response = await _dio.post(
         '',
-        data: {'model': 'grok-beta', 'messages': messages, 'temperature': 0.7, 'max_tokens': 1000},
+        data: {
+          'model': ApiConfig.defaultModel,
+          'messages': messages,
+          'temperature': 0.7,
+          'max_tokens': 1000,
+        },
       );
 
       if (response.statusCode == 200) {

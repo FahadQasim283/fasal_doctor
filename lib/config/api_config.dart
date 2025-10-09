@@ -2,8 +2,15 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ApiConfig {
   // Load API key from .env file
-  static String get grokApiKey => dotenv.env['GROK_API_KEY'] ?? '';
-  static const String grokApiUrl = 'https://api.x.ai/v1/chat/completions';
+  static String get groqApiKey => dotenv.env['GROQ_ClOUD_API_KEY'] ?? '';
+  static const String groqApiUrl = 'https://api.groq.com/openai/v1/chat/completions';
+
+  // Available Groq models (fast and free tier friendly)
+  static const String defaultModel = 'llama-3.3-70b-versatile'; // Recommended: Fast and powerful
+  // Alternative models:
+  // - 'llama-3.1-70b-versatile' (Very fast)
+  // - 'mixtral-8x7b-32768' (Good for longer context)
+  // - 'gemma2-9b-it' (Lightweight and fast)
 
   // System prompt for the chatbot
   static const String systemPrompt = '''
