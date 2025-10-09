@@ -58,6 +58,7 @@ dependencies:
   
   # Local storage
   shared_preferences: ^2.2.2
+  pytorch_lite: ^4.3.2
 
 dev_dependencies:
   flutter_test:
