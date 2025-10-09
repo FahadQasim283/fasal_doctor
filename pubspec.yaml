@@ -49,6 +49,12 @@ dependencies:
   # File handling
   path_provider: ^2.1.2
   flutter_launcher_icons: ^0.14.4
+  
+  # API handling
+  dio: ^5.4.1
+  
+  # Environment variables
+  flutter_dotenv: ^5.1.0
 
 dev_dependencies:
   flutter_test:
@@ -75,6 +81,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/best_advanced_crop_model_mobile (3).pt
+    - .env
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

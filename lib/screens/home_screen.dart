@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:animate_do/animate_do.dart';
 import '../services/model_service.dart';
 import 'result_screen.dart';
@@ -37,7 +36,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _pickImage(ImageSource source) async {
-
     try {
       final XFile? image = await _picker.pickImage(source: source, imageQuality: 85);
 

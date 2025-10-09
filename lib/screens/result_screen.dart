@@ -2,6 +2,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:animate_do/animate_do.dart';
+import '../models/disease_info.dart';
+import 'chatbot_screen.dart';
 
 class ResultScreen extends StatelessWidget {
   final String imagePath;
@@ -43,7 +45,8 @@ class ResultScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final severity = result['severity'] as String;
     final confidence = result['confidence'] as double;
-    final isHealthy = severity.toLowerCase() == 'none';
+    final diseaseId = result['class'] as String;
+    final diseaseInfo = DiseaseInfo.diseaseDatabase[diseaseId];
 
     return Scaffold(
       body: Container(
@@ -67,26 +70,36 @@ class ResultScreen extends StatelessWidget {
                       children: [
                         FadeInDown(child: _buildImageSection()),
                         const SizedBox(height: 24),
-                        FadeIn(child: _buildResultHeader(severity, confidence)),
+                        FadeIn(child: _buildResultHeader(severity, confidence, diseaseInfo)),
                         const SizedBox(height: 24),
-                        FadeInUp(child: _buildDiseaseInfo()),
+                        FadeInUp(child: _buildDiseaseInfo(diseaseInfo)),
                         const SizedBox(height: 24),
                         FadeInUp(
                           delay: const Duration(milliseconds: 200),
-                          child: _buildTreatmentSection(),
+                          child: _buildTreatmentSection(diseaseInfo),
+                        ),
+                        if (diseaseInfo != null) ...[
+                          const SizedBox(height: 24),
+                          FadeInUp(
+                            delay: const Duration(milliseconds: 300),
+                            child: _buildSymptomsSection(diseaseInfo),
+                          ),
+                          const SizedBox(height: 24),
+                          FadeInUp(
+                            delay: const Duration(milliseconds: 400),
+                            child: _buildPreventionSection(diseaseInfo),
+                          ),
+                        ],
+                        const SizedBox(height: 24),
+                        FadeInUp(
+                          delay: const Duration(milliseconds: 500),
+                          child: _buildConfidenceSection(),
                         ),
                         const SizedBox(height: 24),
                         FadeInUp(
-                          delay: const Duration(milliseconds: 400),
-                          child: _buildConfidenceSection(),
+                          delay: const Duration(milliseconds: 600),
+                          child: _buildChatbotButton(context, diseaseInfo),
                         ),
-                        if (!isHealthy) ...[
-                          const SizedBox(height: 24),
-                          FadeInUp(
-                            delay: const Duration(milliseconds: 600),
-                            child: _buildActionButtons(context),
-                          ),
-                        ],
                         const SizedBox(height: 40),
                       ],
                     ),
@@ -144,7 +157,7 @@ class ResultScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildResultHeader(String severity, double confidence) {
+  Widget _buildResultHeader(String severity, double confidence, DiseaseInfo? diseaseInfo) {
     final severityColor = _getSeverityColor(severity);
     final isHealthy = severity.toLowerCase() == 'none';
 
@@ -169,16 +182,38 @@ class ResultScreen extends StatelessWidget {
         children: [
           Icon(_getSeverityIcon(severity), size: 64, color: Colors.white),
           const SizedBox(height: 16),
-          Text(
-            result['className'] as String,
-            style: GoogleFonts.poppins(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
+          if (diseaseInfo != null) ...[
+            Text(
+              diseaseInfo.name.english,
+              style: GoogleFonts.poppins(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+              textAlign: TextAlign.center,
             ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
+            const SizedBox(height: 8),
+            Text(
+              diseaseInfo.name.urdu,
+              style: GoogleFonts.notoNastaliqUrdu(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ] else ...[
+            Text(
+              result['className'] as String,
+              style: GoogleFonts.poppins(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+          const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
@@ -199,7 +234,7 @@ class ResultScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDiseaseInfo() {
+  Widget _buildDiseaseInfo(DiseaseInfo? diseaseInfo) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -216,27 +251,46 @@ class ResultScreen extends StatelessWidget {
             children: [
               Icon(Icons.info_outline, color: Colors.blue.shade600, size: 24),
               const SizedBox(width: 12),
-              Text(
-                'Description',
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey.shade800,
+              Expanded(
+                child: Text(
+                  'Description | تفصیل',
+                  style: GoogleFonts.poppins(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey.shade800,
+                  ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 12),
-          Text(
-            result['description'] as String,
-            style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey.shade700, height: 1.5),
-          ),
+          if (diseaseInfo != null) ...[
+            Text(
+              diseaseInfo.description.english,
+              style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey.shade700, height: 1.5),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              diseaseInfo.description.urdu,
+              style: GoogleFonts.notoNastaliqUrdu(
+                fontSize: 14,
+                color: Colors.grey.shade700,
+                height: 1.8,
+              ),
+              textDirection: TextDirection.rtl,
+            ),
+          ] else ...[
+            Text(
+              result['description'] as String,
+              style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey.shade700, height: 1.5),
+            ),
+          ],
         ],
       ),
     );
   }
 
-  Widget _buildTreatmentSection() {
+  Widget _buildTreatmentSection(DiseaseInfo? diseaseInfo) {
     final severity = result['severity'] as String;
     final isHealthy = severity.toLowerCase() == 'none';
 
@@ -260,21 +314,40 @@ class ResultScreen extends StatelessWidget {
                 size: 24,
               ),
               const SizedBox(width: 12),
-              Text(
-                isHealthy ? 'Care Tips' : 'Treatment',
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey.shade800,
+              Expanded(
+                child: Text(
+                  isHealthy ? 'Care Tips | دیکھ بھال کی تجاویز' : 'Treatment | علاج',
+                  style: GoogleFonts.poppins(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey.shade800,
+                  ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 12),
-          Text(
-            result['treatment'] as String,
-            style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey.shade700, height: 1.5),
-          ),
+          if (diseaseInfo != null) ...[
+            Text(
+              diseaseInfo.treatment.english,
+              style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey.shade700, height: 1.5),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              diseaseInfo.treatment.urdu,
+              style: GoogleFonts.notoNastaliqUrdu(
+                fontSize: 14,
+                color: Colors.grey.shade700,
+                height: 1.8,
+              ),
+              textDirection: TextDirection.rtl,
+            ),
+          ] else ...[
+            Text(
+              result['treatment'] as String,
+              style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey.shade700, height: 1.5),
+            ),
+          ],
         ],
       ),
     );
@@ -339,58 +412,221 @@ class ResultScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButtons(BuildContext context) {
-    return Column(
-      children: [
-        _buildActionButton(
-          icon: Icons.phone,
-          label: 'Contact Expert',
-          color: Colors.blue,
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Expert consultation feature coming soon!')),
+  Widget _buildSymptomsSection(DiseaseInfo diseaseInfo) {
+    if (diseaseInfo.symptoms.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(color: Colors.green.shade200, blurRadius: 10, offset: const Offset(0, 4)),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.visibility, color: Colors.orange.shade600, size: 24),
+              const SizedBox(width: 12),
+              Text(
+                'Symptoms | علامات',
+                style: GoogleFonts.poppins(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey.shade800,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ...diseaseInfo.symptoms.asMap().entries.map((entry) {
+            final index = entry.key;
+            final symptom = entry.value;
+            return Padding(
+              padding: EdgeInsets.only(bottom: index < diseaseInfo.symptoms.length - 1 ? 12 : 0),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    margin: const EdgeInsets.only(top: 6),
+                    width: 6,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: Colors.orange.shade600,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          symptom.english,
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            color: Colors.grey.shade700,
+                            height: 1.4,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          symptom.urdu,
+                          style: GoogleFonts.notoNastaliqUrdu(
+                            fontSize: 13,
+                            color: Colors.grey.shade600,
+                            height: 1.6,
+                          ),
+                          textDirection: TextDirection.rtl,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             );
-          },
-        ),
-        const SizedBox(height: 12),
-        _buildActionButton(
-          icon: Icons.shopping_bag,
-          label: 'Buy Treatment Products',
-          color: Colors.orange,
-          onTap: () {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(const SnackBar(content: Text('E-commerce integration coming soon!')));
-          },
-        ),
-      ],
+          }).toList(),
+        ],
+      ),
     );
   }
 
-  Widget _buildActionButton({
-    required IconData icon,
-    required String label,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color, width: 2),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+  Widget _buildPreventionSection(DiseaseInfo diseaseInfo) {
+    if (diseaseInfo.preventionTips.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(color: Colors.green.shade200, blurRadius: 10, offset: const Offset(0, 4)),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.shield, color: Colors.green.shade600, size: 24),
+              const SizedBox(width: 12),
+              Text(
+                'Prevention Tips | بچاؤ کی تجاویز',
+                style: GoogleFonts.poppins(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey.shade800,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ...diseaseInfo.preventionTips.asMap().entries.map((entry) {
+            final index = entry.key;
+            final tip = entry.value;
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: index < diseaseInfo.preventionTips.length - 1 ? 12 : 0,
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    margin: const EdgeInsets.only(top: 6),
+                    width: 6,
+                    height: 6,
+                    decoration: BoxDecoration(color: Colors.green.shade600, shape: BoxShape.circle),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          tip.english,
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            color: Colors.grey.shade700,
+                            height: 1.4,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          tip.urdu,
+                          style: GoogleFonts.notoNastaliqUrdu(
+                            fontSize: 13,
+                            color: Colors.grey.shade600,
+                            height: 1.6,
+                          ),
+                          textDirection: TextDirection.rtl,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChatbotButton(BuildContext context, DiseaseInfo? diseaseInfo) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(colors: [Colors.blue.shade600, Colors.blue.shade700]),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(color: Colors.blue.shade300, blurRadius: 12, offset: const Offset(0, 6)),
+        ],
+      ),
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ChatbotScreen(
+                diseaseName: diseaseInfo?.name.english ?? result['className'] as String,
+                diseaseDescription:
+                    diseaseInfo?.description.english ?? result['description'] as String,
+              ),
+            ),
+          );
+        },
+        child: Column(
           children: [
-            Icon(icon, color: color),
-            const SizedBox(width: 12),
+            Icon(Icons.chat_bubble_outline, size: 48, color: Colors.white),
+            const SizedBox(height: 12),
             Text(
-              label,
-              style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600, color: color),
+              'Talk to Fasal Doctor AI',
+              style: GoogleFonts.poppins(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'فصل ڈاکٹر AI سے بات کریں',
+              style: GoogleFonts.notoNastaliqUrdu(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.white.withOpacity(0.9),
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Get personalized advice and answers to your questions',
+              style: GoogleFonts.poppins(fontSize: 12, color: Colors.white.withOpacity(0.8)),
+              textAlign: TextAlign.center,
             ),
           ],
         ),
