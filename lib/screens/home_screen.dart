@@ -2,10 +2,11 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:animate_do/animate_do.dart';
 import '../services/model_service.dart';
+import '../widgets/notifications_widgets.dart';
 import 'result_screen.dart';
+import 'chatbot_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -37,7 +38,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _pickImage(ImageSource source) async {
-
     try {
       final XFile? image = await _picker.pickImage(source: source, imageQuality: 85);
 
@@ -67,10 +67,12 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  void _openChatbot() {
+    Navigator.push(context, MaterialPageRoute(builder: (context) => const ChatbotScreen()));
+  }
+
   void _showError(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message), backgroundColor: Colors.red));
+    NotificationWidgets.showError(message);
   }
 
   @override
@@ -85,6 +87,17 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         child: SafeArea(child: _isLoading ? _buildLoadingView() : _buildMainContent()),
+      ),
+      floatingActionButton: FadeInUp(
+        delay: const Duration(milliseconds: 600),
+        child: FloatingActionButton.extended(
+          onPressed: _openChatbot,
+          backgroundColor: Colors.green.shade600,
+          foregroundColor: Colors.white,
+          elevation: 8,
+          icon: const Icon(Icons.chat_bubble_outline),
+          label: Text('Chat', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+        ),
       ),
     );
   }
@@ -257,6 +270,14 @@ class _HomeScreenState extends State<HomeScreen> {
             subtitle: 'Select existing photo',
             color: Colors.purple,
             onTap: _modelInitialized ? () => _pickImage(ImageSource.gallery) : null,
+          ),
+          const SizedBox(height: 16),
+          _buildActionButton(
+            icon: Icons.chat_bubble_outline,
+            label: 'Ask Fasal Doctor',
+            subtitle: 'Get expert advice on crop diseases',
+            color: Colors.green,
+            onTap: () => _openChatbot(),
           ),
         ],
       ),
